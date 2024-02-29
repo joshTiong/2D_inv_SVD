@@ -63,33 +63,13 @@ int main()
     // FDS Variables 1
     dt_FDS = 0.001;
 
-    cout << "--------Common Variables--------" << endl;
-    // cout << "Set length of 1st x-axis space [m] = " << endl;
-    // cin >> Lx;
-    // cout << "Set length of 1st y-axis space [m] = " << endl;
-    // cin >> Ly;
-    // cout << "Set boundary temperature = " << endl;
-    // cin >> inputBound;
     cout << "--------dx & tau Change Variables--------" << endl;
     cout << "dx change total iteration = " << endl;
     cin >> nonDim_dx_iterIndexMax;
-    //cout << "tau change total iteration = " << endl;
-    //cin >> nonDim_tau_iterIndexMax;
-    cout << "--------FDS Variables--------" << endl;
-    //cout << "Set iteration end time [s] = " << endl;
-    //cin >> endTime;
     endTime = 20;
-    //cout << "Set condition time that heating starts [s] = " << endl;
-    //cin >> condTime;
     condTime = 0;
-    // cout << "Set short circuit volume divider of " << Lx << "[m3] = " << endl;
-    // cin >> Nx_SoC;
-    //cout << "Set point multiplier = " << endl;
-    //cin >> pointMulti;
     pointMulti = 1;
     cout << "--------Inverse Variables--------" << endl;
-    //cout << "Set 1st measurement frequency for one iteration of inverse analysis [ascreasing order] = " << endl;
-    //cin >> measFreq_start;
     cout << "Set 1st division number of x-axis space (bound to bound) [lowest is Nx=4] [ascending order] = " << endl;
     cin >> Nx_inv_INIT;
     cout << "Set 1st division number of y-axis space (bound to bound) [lowest is Ny=4] [ascending order] = " << endl;
@@ -112,8 +92,6 @@ int main()
     // Initialize Lx & Ly
     MatrixXd Lx_vec(6, 1);
     Lx_vec << 0.08, 0.1, 0.12, 0.14, 0.16, 0.18;
-    //0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0;
-    //1.2, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0
     MatrixXd Ly_vec(6, 1);
     Ly_vec = Lx_vec;
 
@@ -182,33 +160,11 @@ int main()
     nonDim_inputBound_iterIndexMax = inputBound_vec.rows();
     nonDim_tau_iterIndex = 0;
     nonDim_tau_iterIndexMax = measFreq_vec.rows();
-    //nonDim_dx_iterIndexMax = Nx_vec.rows();
-
-    // Permission to continue start
-    //     cout << "Lx_vec = \n" << Lx_vec << endl;
-    //     cout << "Ly_vec = \n" << Ly_vec << endl;
-    //     cout << "Continue? [1]Yes [2]End" << endl;
-    //     cin >> con;
-    //
-    //     if ( con == 1){
-    //         cout << "Continuing..." << endl;
-    //     }
-    //     else if (con == 2){
-    //         cout << "Ending..." << endl;
-    //         return 0;
-    //     }
-    //     else {
-    //         cout << "Error at choice before M" << endl;
-    //         return 0;
-    //     }
-    // Permission to continue end
 
     while (nonDim_Lx_iterIndex < nonDim_Lx_iterIndexMax)
     {
         Lx = Lx_vec(nonDim_Lx_iterIndex, 0);
         Ly = Ly_vec(nonDim_Lx_iterIndex, 0);
-        // heatPos_x_even = Lx / 2;
-        // heatPos_y_even = Ly / 2;
 
         while (nonDim_dx_iterIndex < nonDim_dx_iterIndexMax)
         {
@@ -282,8 +238,6 @@ int main()
                     MatrixXd pn = MatrixXd::Zero(measPerDt_max, Nxy_inv);
                     MatrixXd I_p = MatrixXd::Identity(Nxy_inv, measPerDt_max);
                     MatrixXd p_initial = MatrixXd::Zero(measPerDt_max, Nxy_inv);
-                    // cout << "p rows = " << p.rows() << " cols = "<< p.cols() << endl;
-                    // cout << "I_p rows = " << I_p.rows() << " cols = " << I_p.cols() << endl;
 
                     // Initialize errTempMatrix & errTempMatrix_extract
                     MatrixXd errTempMatrix = MatrixXd::Zero(measPerDt_iterIndexMax, errTempMatrix_xLen);
@@ -303,8 +257,6 @@ int main()
                         VectorXd W_initial = VectorXd::Zero(measPerDt_max * measFreq);
                         W_initialRows = W_initial.rows();
 
-                        // while(measPerDt_iterIndex < measPerDt_iterIndexMax){
-
                         // Set measPerDt_final
                         measPerDt_final = measPerDt_max;
 
@@ -315,17 +267,11 @@ int main()
                         // Iteration settings
                         if (nonDim_tau_iterIndex == 0 && measPerDt_iterIndex == 0 && nonDim_dt_iterIndex == 0)
                         {
-                            //cout << "Inverse analysis start time [s] larger than " << dt_inv(nonDim_dt_iterIndex, 0) << "s = " << endl;
-                            //cin >> startTime;
                             startTime = inv_tempStart_idx*dt_FDS;
                             startNum = (startTime * measDt) / dt_inv(nonDim_dt_iterIndex, 0);
                             startIndex = startNum;// - 1;
                             iterBound = (W_namaRows - startNum) / measDt;
-                            //cout << "Iteration number count within " << iterBound << " = " << endl;
-                            //cin >> heatSeek_iterNum;
                             heatSeek_iterNum = 1;
-                            //cout << "Iteration jump = " << endl;
-                            //cin >> iterJump;
                             iterJump = 1;
                             heatSeek_iterNumMax = startNum + heatSeek_iterNum * iterJump * measDt;
                             heatSeek_iterIndexMax = heatSeek_iterNumMax - 1;
@@ -372,10 +318,7 @@ int main()
                                 }
                             }
                             An = A * I_A;
-                            //saveData("inv_A_2D_" + std::to_string(int(Lx * 1000)) + "x" + std::to_string(int(Ly * 1000)) + "mm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt" + std::to_string(int(dt_inv(nonDim_dt_iterIndex, 0) * 1000)) + "m_ptM" + std::to_string(pointMulti) + ".csv", A);
-
-                            // count_p_x = 0;
-                            // count_p_y = 0;
+                            
                             j = 0;
                             for (i = 0; i < p_xNum; i++)
                             {
@@ -384,19 +327,6 @@ int main()
                                 i++;
                                 p(i, j + (p_yNum / 2) + 1) = -1;
                                 j += (p_yNum / 2) + 2;
-
-                                // Loop count
-                                // if(count_p_x%1 != 0){
-                                // }
-                                // else if(count_p_x%1 == 0){
-                                //         cout << "Loop at p_x[" << count_p_x << "]" << endl;
-                                // }
-                                // else{
-                                //         cout << "error at loop p_x" << endl;
-                                //         return 0;
-                                // }
-
-                                // count_p_x++;
                             }
                             cout << "\nCompleted p_x" << endl;
 
@@ -408,23 +338,8 @@ int main()
                                 p(j + 1, i + (Nxy_inv - 1) - (p_yNum / 2)) = -1;
                                 j++;
                                 i++;
-
-                                // Loop count
-                                // if(count_p_y%1 != 0){
-                                // }
-                                // else if(count_p_y%1 == 0){
-                                //         cout << "Loop at p_y[" << count_p_y << "]" << endl;
-                                // }
-                                // else{
-                                //         cout << "error at loop p_y" << endl;
-                                //	  return 0;
-                                // }
-
-                                // count_p_y++;
                             }
                             cout << "\nCompleted p_y" << endl;
-
-                            // saveData("inv_p_2D_"+ std::to_string(int(Lx*1000)) +"x"+ std::to_string(int(Ly*1000)) +"mm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measFreq" + std::to_string(measFreq) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt" + std::to_string(int(dt_inv*1000)) + "m_ptM" + std::to_string(pointMulti) + ".csv", p);
 
                             for (j = 0; j < measPerDt_max; j++)
                             {
@@ -455,20 +370,13 @@ int main()
                             // Resizing p & pn
                             if (initialLoop > 0 && measPerDt_iterIndex == 0)
                             {
-
-                                // cout << "Resizing p & pn to (" << Nxy_inv << "," << measPerDt_max << ")" << endl;
                                 p.conservativeResize(measPerDt_max, Nxy_inv);
                                 pn.conservativeResize(measPerDt_max, Nxy_inv);
-
-                                // Reinitialize p & pn
-                                // MatrixXd p = MatrixXd::Zero(measPerDt_max, Nxy_inv);
-                                // MatrixXd pn = MatrixXd::Zero(measPerDt_max, Nxy_inv);
 
                                 for (j = 0; j < measPerDt_max; j++)
                                 {
                                     for (k = 0; k < Nxy_inv; k++)
                                     {
-                                        // cout << "j = " << j << " k = " << k << endl;
                                         p(j, k) = p_initial(j, k);
                                     }
                                 }
@@ -476,15 +384,7 @@ int main()
 
                             pn = (p * An);
                             k = 0;
-
-                            // if(i == 0){
-                            //	saveData("inv_pn_i[" + std::to_string(i) + "]_" + std::to_string(int(Lx*100)) +"x"+ std::to_string(int(Ly*100)) +"cm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measFreq" + std::to_string(measFreq) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt001.csv", pn);
-                            //	saveData("inv_p_i[" + std::to_string(i) + "]_" + std::to_string(int(Lx*100)) +"x"+ std::to_string(int(Ly*100)) +"cm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measFreq" + std::to_string(measFreq) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt001.csv", p);
-                            //	saveData("inv_p_initial_i[" + std::to_string(i) + "]_" + std::to_string(int(Lx*100)) +"x"+ std::to_string(int(Ly*100)) +"cm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measFreq" + std::to_string(measFreq) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt001.csv", p_initial);
-                            // }
-
-                            // cout << "Buidling M for timestep [" << i + 1 << "/" << measFreq << "]..." << endl;
-                            // cout << "with p (rows,cols) = " << "(" << p.rows() << "," << p.cols() << ")" << endl;
+                            
                             // Making M
                             for (j = (i * measPerDt_final); j < ((i + 1) * measPerDt_final); j++)
                             {
@@ -494,36 +394,15 @@ int main()
                                 }
                                 k++;
                             }
-                            // Loop count
-                            // if(count_p_y%1 != 0){
-                            // }
-                            // else if(count_p_y%1 == 0){
-                            //         cout << "Loop at pn[" << count_pn << "]" << endl;
-                            // }
-                            // else{
-                            //         cout << "error at loop pn" << endl;
-                            //         return 0;
-                            // }
-
-                            // count_pn++;
                             An = An * A;
                         }
                         An = A * I_A;
-                        // saveData("inv_M_2D_"+ std::to_string(int(Lx*1000)) +"x"+ std::to_string(int(Ly*1000)) +"mm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measFreq" + std::to_string(measFreq) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt001.csv", M);
-
-                        // remove row from p
-                        // removeRow(p, measPerDt_final-1);//measPerDt_final-1 converts measPerDt to index
-                        // removeRow(pn, measPerDt_final-1);
 
                         // M*Mt
                         cout << "Finding M and its characteristics..." << endl;
                         Mt = M.transpose();
                         MMt = M * Mt;
                         MMtRows = MMt.rows();
-                        // saveData("inv_MMt_2D_"+ std::to_string(int(Lx*100)) +"x"+ std::to_string(int(Ly*100)) +"cm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_iterNum" + std::to_string(heatSeek_iterNum) + "_Nx" + std::to_string(Nx) + "_Ny" + std::to_string(Ny) + "_measDt" + std::to_string(int(measDt)) + "_measPerDt" + std::to_string(measPerDt_final) + "_measFreq" + std::to_string(measFreq) + "_dt001.csv", MMt);
-
-                        // cout << "MMt rows = " << MMt.rows() << endl;
-                        // cout << "MMt cols = " << MMt.cols() << endl;
 
                         // Rank of MMt
                         Eigen::FullPivLU<Eigen::MatrixXd> lu_decomp(MMt);
@@ -533,8 +412,6 @@ int main()
                         // MMt eigenvalues & eigenvectors
                         EigenSolver<MatrixXd> es(MMt);
                         MatrixXd gamma = es.pseudoEigenvalueMatrix();
-
-                        // saveData("inv_gamma_2D_"+ std::to_string(int(Lx*1000)) +"x"+ std::to_string(int(Ly*1000)) +"mm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measFreq" + std::to_string(measFreq) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt" + std::to_string(int(dt_inv*1000)) + "m_ptM" + std::to_string(pointMulti) + ".csv", gamma);
 
                         // Checking if measFreq is suitable for size of MMt
                         gammaRow = gamma.rows();
@@ -558,16 +435,10 @@ int main()
                         {
                             gamma_show(i) = gamma(i, i);
                         }
-                        // cout << "Singular Value for MMt = \n" << gamma_show << endl;
 
                         // Find w of W*Gamma*Vt
                         MatrixXd w = es.pseudoEigenvectors();
                         wRows = w.rows();
-
-                        // saveData("inv_w_2D_"+ std::to_string(int(Lx*100)) +"x"+ std::to_string(int(Ly*100)) +"cm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_iterNum" + std::to_string(heatSeek_iterNum) + "_Nx" + std::to_string(Nx) + "_Ny" + std::to_string(Ny) + "_measDt" + std::to_string(int(measDt)) + "_measPerDt" + std::to_string(measPerDt_final) + "_measFreq" + std::to_string(measFreq) + ".csv", w);
-
-                        // cout << "w rows = " << w.rows() << endl;
-                        // cout << "w cols = " << w.cols() << endl;
 
                         // Auto calc filter
                         filter = rankMMt;
@@ -614,9 +485,6 @@ int main()
                             }
                         }
 
-                        // cout << "vt = \n" << vt << endl;
-                        cout << "Here!" << endl;
-
                         MatrixXd VFinal = MatrixXd::Zero(Nxy_inv, heatSeek_iterNum);
                         MatrixXd VFinal_nama = MatrixXd::Zero(Nxy_inv, heatSeek_iterNum);
                         MatrixXd W_extract = MatrixXd::Zero(measPerDt_max * measFreq, heatSeek_iterNum * measPerDt_max);
@@ -631,14 +499,11 @@ int main()
                             l += (measDx - 1) + Nx_FDS_woBound * (measDy - 1);
                             for (j = 0; j < Nx_inv - 1; j++)
                             {
-                                // cout << "i = " << i << " j = " << j << " k = " << k << " l = " << l << endl;
                                 initialT(k) = W_nama(startIndex, l);
                                 l += measDx;
                                 k++;
                             }
                         }
-                        // cout << "Initial temp recording ends" << endl;
-                        // saveData("inv_initialTemp_2D_"+ std::to_string(int(Lx*1000)) +"x"+ std::to_string(int(Ly*1000)) +"mm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measFreq" + std::to_string(measFreq) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt" + std::to_string(int(dt_inv*1000)) + "m_ptM" + std::to_string(pointMulti) + ".csv", initialT);
 
                         while (heatSeek_iterIndex < heatSeek_iterIndexMax)
                         {
@@ -656,7 +521,6 @@ int main()
                                 // And gradient of measurement data in corners is taken as the gradient over the x axis not y axis
                                 //--------Caution--------
                                 k = startIndex;
-                                // W_frontBackHosei = (measDx-1) + (measDx*3) + measDx;
                                 W_frontBackHosei = Ny_FDS_woBound * measDy * (Ny_inv - 2);
                                 for (i = 0; i < measPerDt_final * measFreq; i++)
                                 {
@@ -666,16 +530,13 @@ int main()
                                     for (j = 0; j < p_xNum; j++)
                                     {
                                         l += Ny_FDS_woBound * (measDy - 1); // change position at y-axis
-                                        // cout << "i = " << i << ", j = " << j << ", k = " << k << ", l = " << l << endl;
                                         W_initial(i) = W_nama(k, l) - bound_x0; /// dx;
                                         i++;
                                         l += measDx * ((p_yNum / 2) + 1);
-                                        // cout << "i = " << i << ", j = " << j << ", k = " << k << ", l = " << l << endl;
                                         W_initial(i) = bound_Nxm1 - W_nama(k, l); /// dx;
                                         i++;
                                         j++;
                                         l += 2 * (measDx - 1) + 1; // change postion at x-axis 2
-                                        // saveData("inv_Wx[" + std::to_string(i) + "][" + std::to_string(j) +"]_2D.csv", W);
                                     }
 
                                     // All y-axix measurements w/o corners
@@ -684,18 +545,14 @@ int main()
                                     for (j = 0; j < p_yNum; j++)
                                     {
                                         l += measDx; // change position to yNum
-                                        // cout << "i = " << i << ", j = " << j << ", k = " << k << ", l = " << l << endl;
                                         W_initial(i) = W_nama(k, l) - bound_y0; /// dy;
                                         i++;
-                                        // cout << "i = " << i << ", j = " << j << ", k = " << k << ", l = " << l+W_frontBackHosei << endl;
                                         W_initial(i) = bound_Nym1 - W_nama(k, l + W_frontBackHosei); /// dy;
                                         i++;
                                         j++;
-                                        // saveData("inv_Wy[" + std::to_string(i) + "][" + std::to_string(j) + "]_2D.csv", W);
                                     }
                                     i -= 1;
                                     k += measDt * iterJump;
-                                    // cout << "i = " << i << "/" << measPerDt*measFreq << endl;
                                 }
                                 cout << "Completed extracting measurement data into W_initial.\nNow copying into W_final." << endl;
 
@@ -725,22 +582,6 @@ int main()
                                 return 0;
                             }
 
-                            // Correction due to boundary data
-                            // for(i=0; i<measFreq; i++){
-                            //	for(j=0; j<p_xNum; j++){
-                            //		W_bound(j + i*measPerDt) = -bound_x0*kappa_x_inv;
-                            //		j++;
-                            //		W_bound(j + i*measPerDt) = bound_Nxm1*kappa_x_inv;
-                            //	}
-                            //
-                            //	for(j=0; j<p_yNum; j++){
-                            //		W_bound(j + p_xNum + i*measPerDt) = -bound_y0*kappa_y_inv;
-                            //		j++;
-                            //		W_bound(j + p_xNum + i*measPerDt) = bound_Nym1*kappa_y_inv;			}
-                            // }
-
-                            // saveData("inv_WBound_2D_"+ std::to_string(int(Lx*100)) +"x"+ std::to_string(int(Ly*100)) +"cm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_iterNum" + std::to_string(heatSeek_iterNum) + "_Nx" + std::to_string(Nx) + "_Ny" + std::to_string(Ny) + "_measDt" + std::to_string(int(measDt)) + "_measPerDt" + std::to_string(measPerDt) + "_measFreq" + std::to_string(measFreq) + "_dt001.csv", W_bound);
-
                             // Check dimensions of MMt.rows and W_final.rows
                             if (W_finalRows == MMtRows)
                             {
@@ -765,7 +606,6 @@ int main()
 
                             // Find coefficient b of w
                             MatrixXd b = (w.inverse()) * W_final;
-                            // cout << "b = \n" << b << endl;
 
                             VectorXd d = VectorXd::Zero(Nxy_inv);
 
@@ -773,10 +613,8 @@ int main()
                             {
                                 d(i) = b(i) / pow(gamma(i, i), 0.5);
                             }
-                            // cout << "d = \n" << d << endl;
 
                             // Find final V
-
                             MatrixXd v = vt.transpose();
                             MatrixXd V = d(0) * v.col(0);
 
@@ -794,8 +632,6 @@ int main()
                             {
                                 VFinal(i, n) = VFinal_nama(i, n) + inputBound;
                             }
-
-                            // cout << "V at n[" << n << "] = \n" << VFinal << endl;
 
                             heatSeek_iterIndex += measDt * iterJump;
                             cout << "iterMax = " << heatSeek_iterNumMax << endl;
@@ -833,7 +669,6 @@ int main()
                         saveData("inv_errVectorAbs_2D_" + std::to_string(int(Lx * 1000)) + "x" + std::to_string(int(Ly * 1000)) + "mm_copper_exp_bound" + std::to_string(int(bound_x0))  + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measFreq" + std::to_string(measFreq) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt" + std::to_string(int(dt_inv(nonDim_dt_iterIndex, 0) * 1000)) + "m_ptM" + std::to_string(pointMulti) + ".csv", errVector);
 
                         maxErr = errVector.maxCoeff();
-                        // centreTemp = VFinal((Nxy_inv+1)/2,n);
                         rankPerc = 1.0 * rankMMt / Nxy_inv;
                         tau = measFreq * dt_inv(nonDim_dt_iterIndex, 0);
 
@@ -863,7 +698,6 @@ int main()
                         cout << "\nrankMMt% = " << rankPerc << endl;
                         cout << "Max error for Nx[" << Nx_inv << "] = " << maxErr << endl;
                         cout << "Time step size [" << dt_inv(nonDim_dt_iterIndex, 0) << "]" << endl;
-                        // cout << "Centre temp for dx[" << dx_inv << "] = " << centreTemp << endl;
 
                         // measPerDt_iterIndex++;
                         measPerDt_minus++;
@@ -886,24 +720,17 @@ int main()
                         //}
 
                         cout << "Importing into errTempMatrix_extract for tauIndex [" << nonDim_tau_iterIndex << "/" << nonDim_tau_iterIndexMax << "]..." << endl;
-                        // cout << "errTempMatrix_extract rows[" << errTempMatrix.rows() << "] cols[" << errTempMatrix.cols() << "]" << endl;
-                        // cout << "errTempMatrx rows[" << errTempMatrix.rows() << "] cols[" << errTempMatrix.cols() << "]" << endl;
                         for (j = 0; j < measPerDt_iterIndexMax; j++)
                         {
                             for (i = 0; i < errTempMatrix_xLen; i++)
                             {
-                                // cout << "j = " << j << " i = " << i << "." << endl;
                                 errTempMatrix_extract(errTempMatrix_extract_iterIndex, i) = errTempMatrix(j, i);
                             }
                             errTempMatrix_extract_iterIndex++;
                         }
                         cout << "Importing ends!" << endl;
-
-                        // cout << "errTempMatrix for dx[" << dx_inv << "] Nx[" << Nx_inv << "] tau[" << tau << "measFreq[" << measFreq << "] = \n" << errTempMatrix << endl;
-                        // saveData("inv_errTempMatrix_2D_"+ std::to_string(int(Lx*100)) +"x"+ std::to_string(int(Ly*100)) +"_copper_exp_bound" + std::to_string(int(bound_x0)) + "_start" + std::to_string(startNum) + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measPerDtMax" + std::to_string(measPerDt_max) + "_measFreq" + std::to_string(measFreq) + "_dt" + std::to_string(dt_inv) + "_ptM" + std::to_string(pointMulti) + "_dxChange.csv", errTempMatrix);
-
+                        
                         nonDim_tau_iterIndex++;
-                        //measFreq++;
                         measPerDt_iterIndex = 0;
                         measPerDt_final = measPerDt_max;
                         measPerDt_minus = 0;
@@ -914,31 +741,6 @@ int main()
 
                     nonDim_tau_iterIndex = 0;
                     nonDim_inputBound_iterIndex++;
-
-                    // Permission to continue start
-                    //         if(nonDim_dx_iterIndex > 0 && nonDim_dx_iterIndex != nonDim_dx_iterIndexMax){
-                    //                 cout << "Continue with loop[" << nonDim_dx_iterIndex << "] for dx[" << dx << "] ? [1]Yes [2]End" << endl;
-                    //                 cin >> con;
-                    //
-                    //                 if ( con == 1){
-                    //                         cout << "Continuing..." << endl;
-                    //                 }
-                    //                 else if (con == 2){
-                    //                         cout << "Ending & saving..." << endl;
-                    //                         break;
-                    //                 }
-                    //                 else {
-                    //                         cout << "Error at choice before M" << endl;
-                    //                         return 0;
-                    //                 }
-                    //         }
-                    //         else if(nonDim_dx_iterIndex == nonDim_dx_iterIndexMax){
-                    //
-                    //         }
-                    //         else{
-                    //                 cout << "Error at permission of nonDim_dx_iterIndex" << endl;
-                    //         }
-                    // Permission to continue end
                 }
                 nonDim_inputBound_iterIndex = 0;
                 nonDim_dt_iterIndex++;
