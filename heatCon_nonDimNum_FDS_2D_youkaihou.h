@@ -1,5 +1,4 @@
 //FDS Variables 2
-//heatPosIndex = heatPos/dx;
 endTimeIndex = endTime/dt_FDS;
 boundHosei_FDS = 1;
 Nx_FDS_woBound = Nx_FDS - boundHosei_FDS;
@@ -15,8 +14,6 @@ flatXEndIndex = (Nx_FDS_woBound*Ny_FDS_woBound)-1;
 timeCountIndex = 0;
 kappa_x_FDS = alpha*dt_FDS/(dx_FDS*dx_FDS);
 kappa_y_FDS = alpha*dt_FDS/(dy_FDS*dy_FDS);
-
-//#include "heatPos_oddEven.h"
 
 //Electrolyte
 Ea_e = 3.014e+05;
@@ -77,8 +74,6 @@ for(j=1; j<Ny_FDS; j++){
     }
 }
 
-//saveData("measForward_FDS_expHeating_initialT_2D_"+ std::to_string(int(Lx*100)) +"x"+ std::to_string(int(Ly*100)) +"cm_copper_bound0_Nx" + std::to_string(Nx) + "_Ny" + std::to_string(Ny) + "_dt0001.csv", T_spaceMatrix);
-
 //Make T_spaceMatrix_np1 as T_spaceMatrix
 T_spaceMatrix_np1 = T_spaceMatrix*I_spaceMatrix;
 
@@ -91,27 +86,6 @@ for(j=1; j<Ny_FDS; j++){
 }
 flatTimeIndex++;
 flatXIndex = 0;
-
-//saveData("measForward_FDS_expHeating_Tflat.csv", T_flat);
-
-//Permission to continue start
-//	cout << "initialT_spaceMatrix =\n" << T_spaceMatrix << endl;
-//        cout << "Continue with FDS calc? [1]Yes [2]End" << endl;
-//        cin >> cond;
-//
-//        if ( cond == 1){
-//                cout << "Continuing..." << endl;
-//        }
-//        else if (cond == 2){
-//                cout << "Ending..." << endl;
-//                return 0;
-//        }
-//        else {
-//                cout << "Error at choice before A" << endl;
-//                return 0;
-//        }
-//Permission to continue end
-
 
 //Youkaihou calc
 while(timeCountIndex < endTimeIndex){
@@ -131,33 +105,6 @@ while(timeCountIndex < endTimeIndex){
             //Heat Position delta function for x-axis
             iterPos_x = i*dx_FDS;
             kronDeltaFunc(d_xaxis, i, heatPos_x_index);
-            if(i==5 && j==5){
-                //cout << "iterPos_x = " << iterPos_x << " heatPos_x = " << heatPos_x << " d_xaxis = " << d_xaxis << endl;
-                //cout << "iterPos_y = " << iterPos_y << " heatPos_y = " << heatPos_y << " d_yaxis = " << d_yaxis << endl;
-            } 
-            
-            
-            
-            
-            //Permission to continue start
-            //cout << "d_SoC = \n" << d_SoC << endl;
-            //cout << "T_spaceMatrix = \n" << T_spaceMatrix << endl;
-            //cout << "condSoC = \n" << condSoC << endl;
-            //cout << "Continue? [1]Yes [2]End" << endl;
-            //cin >> con;
-            
-            //if ( con == 1){
-            //    cout << "Continuing..." << endl;
-            //}
-            //else if (con == 2){
-            //    cout << "Ending..." << endl;
-            //    return 0;
-            //}
-            //else {
-            //    cout << "Error at choice before M" << endl;
-            //    return 0;
-            //}
-            //Permission to continue end
             kronDeltaSoCFunc(d_SoC, T_spaceMatrix(j,i), condSoC);
             
             qdot_e = H_e*W_e*A_e*exp(-Ea_e/(R*T_spaceMatrix(j,i)));
