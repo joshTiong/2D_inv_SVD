@@ -60,16 +60,20 @@ int main()
     double qdot_e, qdot_sei, qdot_n, qdot_p, qdot_total, qdot_SoC;
     double dx_FDS, dy_FDS, dt_FDS;
 
-    // FDS Variables 1
+    // FDS Variables
     dt_FDS = 0.001;
 
     cout << "--------dx & tau Change Variables--------" << endl;
+    // This index controls the maximum number of nodes Nx change. 
+    // (If Nx = 4,5,6 then nonDim_dx_iterIndexMax = 2 as nonDim_dx_iterIndex starts from 0)
     cout << "dx change total iteration = " << endl;
     cin >> nonDim_dx_iterIndexMax;
+    // endTime is the end time simulated in FDS
     endTime = 20;
     condTime = 0;
     pointMulti = 1;
     cout << "--------Inverse Variables--------" << endl;
+    // Nx will increase by 1 from Nx_inv_INIT so set the initial Nx to be increased from
     cout << "Set 1st division number of x-axis space (bound to bound) [lowest is Nx=4] [ascending order] = " << endl;
     cin >> Nx_inv_INIT;
     cout << "Set 1st division number of y-axis space (bound to bound) [lowest is Ny=4] [ascending order] = " << endl;
@@ -78,14 +82,18 @@ int main()
     // Iteration index settings
     nonDim_dx_iterIndex = 0;
     n = 0;
+    // measPerDt controls the number of measurement nodes per time instant
     measPerDt_iterIndex = 0;
     measPerDt_minus = 0;
+    // errTempMatrix_xLen define the length of the errTempMatrix matrix
+    // errTempMatrix matrix stores the data to be extracted into .csv
     errTempMatrix_xLen = 16;
     initialLoop = 0;
 
     // Other settings
     Nx_inv = Nx_inv_INIT;
     Ny_inv = Ny_inv_INIT;
+    // Temperature where inv starts
     inv_tempStart = 288;
     initialT_in = 275;
 
@@ -95,46 +103,9 @@ int main()
     MatrixXd Ly_vec(6, 1);
     Ly_vec = Lx_vec;
 
-    //MatrixXd Nx_vec(3,1);
-    //Nx_vec << 8, 9, 10;
-    //MatrixXd Ny_vec(3,1);
-    //Ny_vec = Nx_vec;
-
-    //MatrixXd Nx_SoC_vec(7, 7);
-    //Nx_SoC_vec << 
-    //155, 155, 155, 160, 160, 160, 160, 
-    //210, 210, 210, 210, 210, 210, 210,
-    //235, 235, 235, 235, 235, 235, 240,
-    //290, 290, 290, 290, 290, 290, 290,
-    //315, 315, 315, 315, 315, 315, 315,
-    //370, 370, 370, 370, 370, 370, 370,
-    //395, 395, 395, 395, 395, 395, 395;
-
-    //MatrixXd Nx_SoC_vec(15, 3);
-    //Nx_SoC_vec <<  48, 50, 50,
-    //89, 90, 90, 
-    //130, 130, 130, 
-    //170, 170, 170,
-    //210, 200, 200,
-    //250, 250, 250,
-    //300, 300, 300,
-    //350, 350, 350,
-    //400, 390, 400,
-    //440, 440, 450,
-    //460, 460, 460,
-    //500, 500, 500,
-    //550, 550, 550,
-    //600, 600, 600,
-    //640, 640, 640;
-
-    //MatrixXd Nx_SoC_vec(6, 3);
-    //Nx_SoC_vec << 26, 28, 28,
-    //30, 31, 32,
-    //33, 35, 36,
-    //40, 40, 40,
-    //42, 42, 43, 
-    //44, 44, 46;
-
+    // Initialize Nx_SoC_vec matrix
+    // Nx_SoC is the node division for heat released from internal short circuit
+    // The higher the Nx_SoC, the higher the heat released
     MatrixXd Nx_SoC_vec(6, 3);
     Nx_SoC_vec << 73, 78, 82,
     80, 86, 90,
@@ -143,12 +114,15 @@ int main()
     102, 106, 112, 
     106, 112, 118;
 
+    // Boundary temperature
     MatrixXd inputBound_vec(1, 1);
     inputBound_vec << 275; //[K]
 
+    // Time step size for inv
     MatrixXd dt_inv(2, 1);
     dt_inv << 0.01, 0.02;
 
+    // Measurement time interval
     MatrixXi measFreq_vec(5,1);
     measFreq_vec << 12, 15, 18, 21, 24;
 
@@ -161,25 +135,30 @@ int main()
     nonDim_tau_iterIndex = 0;
     nonDim_tau_iterIndexMax = measFreq_vec.rows();
 
+    // Loop over space size Lx, Ly
     while (nonDim_Lx_iterIndex < nonDim_Lx_iterIndexMax)
     {
         Lx = Lx_vec(nonDim_Lx_iterIndex, 0);
         Ly = Ly_vec(nonDim_Lx_iterIndex, 0);
 
+        // Loop over number of nodes Nx, Nz
         while (nonDim_dx_iterIndex < nonDim_dx_iterIndexMax)
         {
+            // Position of heat source node
             heatPos_x_index = int(Nx_inv / 2);
             heatPos_y_index = int(Ny_inv / 2);
             Nx_SoC = Nx_SoC_vec(nonDim_Lx_iterIndex, nonDim_dx_iterIndex);
 
+            // Loop over dt
             while (nonDim_dt_iterIndex < nonDim_dt_iterIndexMax)
             {
+                // Loop over boundary temperature
                 while (nonDim_inputBound_iterIndex < nonDim_inputBound_iterIndexMax)
                 {
                     // Inverse Variable
                     dx_inv = Lx / Nx_inv;
                     dy_inv = Ly / Ny_inv;
-                    // dt_inv = 0.01;
+                    // Heat conduction properties
                     lambda = 398; // 45;
                     cp = 389;     // 445;
                     rho = 8960;   // 7850;
@@ -202,13 +181,13 @@ int main()
                     bound_y0 = inputBound;
                     bound_Nym1 = inputBound;
 
-                    // Forward variables 2
+                    // Calculate Forward variables 
                     Nx_FDS = pointMulti * Nx_inv;
                     Ny_FDS = pointMulti * Ny_inv;
                     dx_FDS = Lx / Nx_FDS;
                     dy_FDS = Ly / Ny_FDS;
 
-                    // Inverse Variables 2
+                    // Calculate Inverse Variables 
                     measDt = dt_inv(nonDim_dt_iterIndex, 0) / dt_FDS;
                     measDx = dx_inv / dx_FDS;
                     measDy = dy_inv / dy_FDS;
@@ -229,11 +208,13 @@ int main()
                     }
 
                     // Initialize A 1
+                    // A is the transformation matrix for y=Ab
                     MatrixXd A = MatrixXd::Zero(Nxy_inv, Nxy_inv);
                     MatrixXd An = MatrixXd::Zero(Nxy_inv, Nxy_inv);
                     MatrixXd I_A = MatrixXd::Identity(Nxy_inv, Nxy_inv);
 
                     // Initialize p
+                    // p is used to construct M from y=Ab. M is from Mv=w.
                     MatrixXd p = MatrixXd::Zero(measPerDt_max, Nxy_inv);
                     MatrixXd pn = MatrixXd::Zero(measPerDt_max, Nxy_inv);
                     MatrixXd I_p = MatrixXd::Identity(Nxy_inv, measPerDt_max);
@@ -248,6 +229,8 @@ int main()
                     MatrixXd W_nama = load_csv<MatrixXd>("measForward_FDS_expHeating_Tflat_2D_" + std::to_string(int(Lx * 1000)) + "x" + std::to_string(int(Ly * 1000)) + "mm_copper_bound" + std::to_string(int(inputBound)) + "_Nx" + std::to_string(Nx_FDS) + "_Ny" + std::to_string(Ny_FDS) + "_NxSoC" + std::to_string(int(Nx_SoC)) + "_dt" + std::to_string(int(dt_FDS * 1000)) + "m.csv");
                     W_namaRows = W_nama.rows();
 
+                    // Loop over measFreq
+                    // tau = measFreq. The index of measFreq
                     while (nonDim_tau_iterIndex < nonDim_tau_iterIndexMax)
                     {
                         //Set measFreq
@@ -264,9 +247,10 @@ int main()
                         VectorXd W_final = VectorXd::Zero(measPerDt_final * measFreq);
                         W_finalRows = W_final.rows();
 
-                        // Iteration settings
+                        // Iteration settings (only set once)
                         if (nonDim_tau_iterIndex == 0 && measPerDt_iterIndex == 0 && nonDim_dt_iterIndex == 0)
                         {
+                            // start time is calculated from temperature start set
                             startTime = inv_tempStart_idx*dt_FDS;
                             startNum = (startTime * measDt) / dt_inv(nonDim_dt_iterIndex, 0);
                             startIndex = startNum;// - 1;
@@ -286,6 +270,7 @@ int main()
                             return 0;
                         }
 
+                        // Construct A
                         if (nonDim_tau_iterIndex == 0 && measPerDt_iterIndex == 0)
                         {
                             // A 2
@@ -319,6 +304,7 @@ int main()
                             }
                             An = A * I_A;
                             
+                            // insert into p 
                             j = 0;
                             for (i = 0; i < p_xNum; i++)
                             {
@@ -359,7 +345,7 @@ int main()
                             return 0;
                         }
 
-                        // M
+                        // Initialize M
                         MatrixXd M = MatrixXd::Zero(measPerDt_final * measFreq, Nxy_inv);
                         MatrixXd Mt = MatrixXd::Zero(Nxy_inv, measPerDt_final * measFreq);
                         MatrixXd MMt = MatrixXd::Zero(measPerDt_final * measFreq, measPerDt_final * measFreq);
@@ -430,6 +416,7 @@ int main()
                             return 0;
                         }
 
+                        // Construct gamma_show vector to show the eigenvalues
                         VectorXd gamma_show = VectorXd::Zero(Nxy_inv);
                         for (i = 0; i < Nxy_inv; i++)
                         {
@@ -440,7 +427,7 @@ int main()
                         MatrixXd w = es.pseudoEigenvectors();
                         wRows = w.rows();
 
-                        // Auto calc filter
+                        // Auto calculate filter
                         filter = rankMMt;
                         filter_low = rankMMt;
                         cout << "Calculating filter..." << endl;
@@ -474,6 +461,8 @@ int main()
                         cout << "Done!\nfilter = " << filter << endl;
 
                         // Find vt of W*Gamma*Vt
+                        // vt is a matrix that contains eigenvectors
+                        // while Vt, W are matrices. Gamma is diagonal matrix.
                         MatrixXd vt = MatrixXd::Zero(Nxy_inv, Nxy_inv);
 
                         for (i = 0; i < filter; i++)
@@ -485,6 +474,9 @@ int main()
                             }
                         }
 
+                        // Initialize VFinal and W_extract. 
+                        // VFinal is the v of Mv=w 
+                        // W_extract is the vector w of Mv=w. The columns of W_extract are the time dimension. This matrix is used to output as .csv.
                         MatrixXd VFinal = MatrixXd::Zero(Nxy_inv, heatSeek_iterNum);
                         MatrixXd VFinal_nama = MatrixXd::Zero(Nxy_inv, heatSeek_iterNum);
                         MatrixXd W_extract = MatrixXd::Zero(measPerDt_max * measFreq, heatSeek_iterNum * measPerDt_max);
@@ -505,6 +497,8 @@ int main()
                             }
                         }
 
+                        // This loop is a iteration function to converge position of heat source node
+                        // This loop is not used
                         while (heatSeek_iterIndex < heatSeek_iterIndexMax)
                         {
 
@@ -515,7 +509,7 @@ int main()
                             if (measPerDt_iterIndex == 0)
                             {
 
-                                // Insert measurement data into w
+                                // Insert measurement data into w. w is the w of Mv=w
                                 //--------Caution--------
                                 // This is only for 2D space with boundary not equal to 0.
                                 // And gradient of measurement data in corners is taken as the gradient over the x axis not y axis
@@ -604,7 +598,7 @@ int main()
                                 W_extract(i, (n * measPerDt_max) + measPerDt_iterIndex) = W_final(i);
                             }
 
-                            // Find coefficient b of w
+                            // Find coefficient b of w. b is needed to calculate VFinal. 
                             MatrixXd b = (w.inverse()) * W_final;
 
                             VectorXd d = VectorXd::Zero(Nxy_inv);
@@ -618,6 +612,7 @@ int main()
                             MatrixXd v = vt.transpose();
                             MatrixXd V = d(0) * v.col(0);
 
+                            // Summation to find VFinal
                             for (i = 0; i < filter - 1; i++)
                             {
                                 V += d(i + 1) * v.col(i + 1);
@@ -643,6 +638,7 @@ int main()
                         n = 0;
                         cout << "Final V with start time at " << startTime << " [s] and iter of " << heatSeek_iterNum << "." << endl;
 
+                        // Extract data
                         saveData("inv_VFinal_2D_"+ std::to_string(int(Lx*1000)) +"x"+ std::to_string(int(Ly*1000)) +"mm_copper_exp_bound" + std::to_string(int(bound_x0))  + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measFreq" + std::to_string(measFreq) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt" + std::to_string(int(dt_inv(nonDim_dt_iterIndex, 0)*1000)) + "m_ptM" + std::to_string(pointMulti) + ".csv", VFinal);
                         saveData("inv_Wextract_2D_" + std::to_string(int(Lx * 1000)) + "x" + std::to_string(int(Ly * 1000)) + "mm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measFreq" + std::to_string(measFreq) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt" + std::to_string(int(dt_inv(nonDim_dt_iterIndex, 0) * 1000)) + "m_ptM" + std::to_string(pointMulti) + ".csv", W_extract);
                         saveData("inv_initialTemp_2D_"+ std::to_string(int(Lx*1000)) +"x"+ std::to_string(int(Ly*1000)) +"mm_copper_exp_bound" + std::to_string(int(bound_x0)) + "_Nx" + std::to_string(Nx_inv) + "_Ny" + std::to_string(Ny_inv) + "_measFreq" + std::to_string(measFreq) + "_measPerDt" + std::to_string(measPerDt_final) + "_dt" + std::to_string(int(dt_inv(nonDim_dt_iterIndex, 0)*1000)) + "m_ptM" + std::to_string(pointMulti) + ".csv", initialT);
@@ -699,7 +695,6 @@ int main()
                         cout << "Max error for Nx[" << Nx_inv << "] = " << maxErr << endl;
                         cout << "Time step size [" << dt_inv(nonDim_dt_iterIndex, 0) << "]" << endl;
 
-                        // measPerDt_iterIndex++;
                         measPerDt_minus++;
                         initialLoop++;
 
